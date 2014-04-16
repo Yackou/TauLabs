@@ -501,7 +501,8 @@ ifeq ($(shell [ -d "$(ARM_SDK_DIR)" ] && echo "exists"), exists)
   ARM_SDK_PREFIX := $(ARM_SDK_DIR)/bin/arm-none-eabi-
 else
   # not installed, hope it's in the path...
-  ARM_SDK_PREFIX ?= arm-none-eabi-
+  # ARM_SDK_PREFIX ?= arm-none-eabi-
+  ARM_SDK_PREFIX ?= arm-linux-gnueabihf-
 endif
 
 ifeq ($(shell [ -d "$(OPENOCD_DIR)" ] && echo "exists"), exists)
