@@ -337,3 +337,10 @@ plugin_boards_stm.subdir = boards_stm
 plugin_boards_stm.depends = plugin_coreplugin
 plugin_boards_stm.depends = plugin_uavobjects
 SUBDIRS += plugin_boards_stm
+
+# Yackou
+plugin_boards_yackou.subdir = boards_yackou
+plugin_boards_yackou.depends = plugin_coreplugin
+plugin_boards_yackou.depends = plugin_uavobjects
+SUBDIRS += plugin_boards_yackou
+

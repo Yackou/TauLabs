@@ -1,0 +1,3 @@
+define connect
+	target remote localhost:3333
+	file ./build/bl_minim4/bl_minim4.elf

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/yackou">
+        <file>images/minim4.png</file>
+    </qresource>
+</RCC>

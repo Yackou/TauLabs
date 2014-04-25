@@ -1,14 +1,14 @@
 /**
  ******************************************************************************
  *
- * @file       quanton.cpp
+ * @file       minim4.cpp
  * @author     Tau Labs, http://taulabs.org, Copyright (C) 2013
  *
  * @addtogroup GCSPlugins GCS Plugins
  * @{
- * @addtogroup Boards_Quantec Quantec boards support Plugin
+ * @addtogroup Boards_Yackou Yackou boards support Plugin
  * @{
- * @brief Plugin to support boards by Quantec
+ * @brief Plugin to support boards by Yackou
  *****************************************************************************/
 /*
  * This program is free software; you can redistribute it and/or modify
@@ -26,28 +26,30 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "quanton.h"
+#include "minim4.h"
 
 #include <uavobjectmanager.h>
 #include "uavobjectutil/uavobjectutilmanager.h"
 #include <extensionsystem/pluginmanager.h>
 
-#include "hwquanton.h"
+#include "hwminim4.h"
 
 /**
- * @brief Quanton::Quanton
- *  This is the Quanton board definition
+ * @brief MiniM4::MiniM4
+ *  This is the MiniM4 board definition
  */
-Quanton::Quanton(void)
+MiniM4::MiniM4(void)
 {
     // Initialize our USB Structure definition here:
     USBInfo board;
     board.vendorID = 0x0fda;
-    board.productID = 0x0101;
+    board.productID = 0x0100;
+//    board.vendorID = 0x1234;
+ //   board.productID = 0x0001;
 
     setUSBInfo(board);
 
-    boardType = 0x90;
+    boardType = 0x86;
 
     // Define the bank of channels that are connected to a given timer
     channelBanks.resize(6);
@@ -57,23 +59,23 @@ Quanton::Quanton(void)
     channelBanks[3] = QVector<int> () << 8;
 }
 
-Quanton::~Quanton()
+MiniM4::~MiniM4()
 {
 
 }
 
-QString Quanton::shortName()
+QString MiniM4::shortName()
 {
-    return QString("quanton");
+    return QString("minim4");
 }
 
-QString Quanton::boardDescription()
+QString MiniM4::boardDescription()
 {
-    return QString("quanton flight control rev. 1 by Quantec Networks GmbH");
+    return QString("minim4 flight control rev. 1 by Yackou" );
 }
 
 //! Return which capabilities this board has
-bool Quanton::queryCapabilities(BoardCapabilities capability)
+bool MiniM4::queryCapabilities(BoardCapabilities capability)
 {
     switch(capability) {
     case BOARD_CAPABILITIES_GYROS:
@@ -92,45 +94,45 @@ bool Quanton::queryCapabilities(BoardCapabilities capability)
 
 
 /**
- * @brief Quanton::getSupportedProtocols
+ * @brief MiniM4::getSupportedProtocols
  *  TODO: this is just a stub, we'll need to extend this a lot with multi protocol support
  * @return
  */
-QStringList Quanton::getSupportedProtocols()
+QStringList MiniM4::getSupportedProtocols()
 {
 
     return QStringList("uavtalk");
 }
 
-QPixmap Quanton::getBoardPicture()
+QPixmap MiniM4::getBoardPicture()
 {
-    return QPixmap(":/quantec/images/quanton.png");
+    return QPixmap(":/yackou/images/minim4.png");
 }
 
-QString Quanton::getHwUAVO()
+QString MiniM4::getHwUAVO()
 {
-    return "HwQuanton";
+    return "HwMiniM4";
 }
 
-int Quanton::queryMaxGyroRate()
+int MiniM4::queryMaxGyroRate()
 {
     ExtensionSystem::PluginManager *pm = ExtensionSystem::PluginManager::instance();
     UAVObjectManager *uavoManager = pm->getObject<UAVObjectManager>();
-    HwQuanton *hwQuanton = HwQuanton::GetInstance(uavoManager);
-    Q_ASSERT(hwQuanton);
-    if (!hwQuanton)
+    HwMiniM4 *hwMiniM4 = HwMiniM4::GetInstance(uavoManager);
+    Q_ASSERT(hwMiniM4);
+    if (!hwMiniM4)
         return 0;
 
-    HwQuanton::DataFields settings = hwQuanton->getData();
+    HwMiniM4::DataFields settings = hwMiniM4->getData();
 
     switch(settings.GyroRange) {
-    case HwQuanton::GYRORANGE_250:
+    case HwMiniM4::GYRORANGE_250:
         return 250;
-    case HwQuanton::GYRORANGE_500:
+    case HwMiniM4::GYRORANGE_500:
         return 500;
-    case HwQuanton::GYRORANGE_1000:
+    case HwMiniM4::GYRORANGE_1000:
         return 1000;
-    case HwQuanton::GYRORANGE_2000:
+    case HwMiniM4::GYRORANGE_2000:
         return 2000;
     default:
         return 500;
