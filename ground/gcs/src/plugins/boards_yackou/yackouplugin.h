@@ -32,6 +32,9 @@
 
 class YackouPlugin : public ExtensionSystem::IPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "TauLabs.plugins.Yackou" FILE "Yackou.json")
+
 public:
    YackouPlugin();
    ~YackouPlugin();

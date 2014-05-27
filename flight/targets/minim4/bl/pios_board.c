@@ -2,7 +2,7 @@
  ******************************************************************************
  * @addtogroup TauLabsBootloader Tau Labs Bootloaders
  * @{
- * @addtogroup QuantonBL Quanton bootloader
+ * @addtogroup MiniM4BL MiniM4 bootloader
  * @{
  *
  * @file       pios_board.c

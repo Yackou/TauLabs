@@ -6,7 +6,7 @@
 # @{
 # @addtogroup 
 # @{
-# @brief Makefile to build firmware for the Quanton board.
+# @brief Makefile to build firmware for the MiniM4 board.
 ###############################################################################
 #
 # This program is free software; you can redistribute it and/or modify
@@ -56,6 +56,8 @@ OPTMODULES += ComUsbBridge
 OPTMODULES += Airspeed/revolution
 OPTMODULES += UAVOHoTTBridge
 OPTMODULES += UAVOFrSKYSensorHubBridge
+OPTMODULES += UAVOLighttelemetryBridge
+OPTMODULES += PicoC
 
 # Paths
 OPUAVTALKINC = $(OPUAVTALK)/inc
@@ -124,7 +126,7 @@ include $(PIOS)/STM32F4xx/library_fw.mk
 
 ## PIOS Hardware (Common)
 SRC += $(PIOSCOMMON)/pios_delay.c
-SRC += $(PIOSCOMMON)/pios_mpu6000.c
+SRC += $(PIOSCOMMON)/pios_mpu6050.c
 SRC += $(PIOSCOMMON)/pios_gcsrcvr.c
 SRC += $(PIOSCOMMON)/pios_hmc5883.c
 SRC += $(PIOSCOMMON)/pios_ms5611.c

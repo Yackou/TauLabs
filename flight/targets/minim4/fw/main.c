@@ -2,10 +2,10 @@
  ******************************************************************************
  * @addtogroup TauLabsTargets Tau Labs Targets
  * @{
- * @addtogroup Quanton Quanton support files
+ * @addtogroup MiniM4 MiniM4 support files
  * @{
  *
- * @file       quanton.c 
+ * @file       minim4.c 
  * @author     Tau Labs, http://taulabs.org, Copyright (C) 2012-2013
  * @brief      Start FreeRTOS and the Modules.
  * @see        The GNU Public License (GPL) Version 3

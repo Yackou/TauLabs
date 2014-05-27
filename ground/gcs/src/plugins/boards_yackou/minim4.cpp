@@ -42,14 +42,12 @@ MiniM4::MiniM4(void)
 {
     // Initialize our USB Structure definition here:
     USBInfo board;
-    board.vendorID = 0x0fda;
-    board.productID = 0x0100;
-//    board.vendorID = 0x1234;
- //   board.productID = 0x0001;
+    board.vendorID = 0x20A0;
+    board.productID = 0x41d0;
 
     setUSBInfo(board);
 
-    boardType = 0x86;
+    boardType = 0x91;
 
     // Define the bank of channels that are connected to a given timer
     channelBanks.resize(6);

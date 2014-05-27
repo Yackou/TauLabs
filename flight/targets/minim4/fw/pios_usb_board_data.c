@@ -2,7 +2,7 @@
  ******************************************************************************
  * @addtogroup TauLabsTargets Tau Labs Targets
  * @{
- * @addtogroup Quanton Quanton support files
+ * @addtogroup MiniM4 MiniM4 support files
  * @{
  *
  * @file       pios_usb_board_data.c 

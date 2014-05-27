@@ -43,11 +43,11 @@ Quanton::Quanton(void)
     // Initialize our USB Structure definition here:
     USBInfo board;
     board.vendorID = 0x0fda;
-    board.productID = 0x0101;
+    board.productID = 0x0100;
 
     setUSBInfo(board);
 
-    boardType = 0x90;
+    boardType = 0x86;
 
     // Define the bank of channels that are connected to a given timer
     channelBanks.resize(6);

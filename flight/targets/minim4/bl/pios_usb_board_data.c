@@ -2,7 +2,7 @@
  ******************************************************************************
  * @addtogroup TauLabsBootloader Tau Labs Bootloaders
  * @{
- * @addtogroup MiniM4BL Quanton bootloader
+ * @addtogroup MiniM4BL MiniM4 bootloader
  * @{
  *
  * @file       pios_usb_board_data.c
@@ -27,6 +27,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+
 #include "pios_usb_board_data.h" /* struct usb_*, USB_* */
 #include "pios_sys.h"		 /* PIOS_SYS_SerialNumberGet */
 #include "pios_usbhook.h"	 /* PIOS_USBHOOK_* */

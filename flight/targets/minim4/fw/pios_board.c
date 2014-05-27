@@ -111,12 +111,12 @@ static const struct pios_ms5611_cfg pios_ms5611_cfg = {
 #endif /* PIOS_INCLUDE_MS5611 */
 
 /**
- * Configuration for the MPU6000 chip
+ * Configuration for the MPU6050 chip
  */
-#if defined(PIOS_INCLUDE_MPU6000)
-#include "pios_mpu6000.h"
-static const struct pios_exti_cfg pios_exti_mpu6000_cfg __exti_config = {
-	.vector = PIOS_MPU6000_IRQHandler,
+#if defined(PIOS_INCLUDE_MPU6050)
+#include "pios_mpu6050.h"
+static const struct pios_exti_cfg pios_exti_mpu6050_cfg __exti_config = {
+	.vector = PIOS_MPU6050_IRQHandler,
 	.line = EXTI_Line0,
 	.pin = {
 		.gpio = GPIOC,
@@ -146,17 +146,17 @@ static const struct pios_exti_cfg pios_exti_mpu6000_cfg __exti_config = {
 	},
 };
 
-static const struct pios_mpu60x0_cfg pios_mpu6000_cfg = {
-	.exti_cfg = &pios_exti_mpu6000_cfg,
+static const struct pios_mpu60x0_cfg pios_mpu6050_cfg = {
+	.exti_cfg = &pios_exti_mpu6050_cfg,
 	.default_samplerate = 666,
 	.interrupt_cfg = PIOS_MPU60X0_INT_CLR_ANYRD,
 	.interrupt_en = PIOS_MPU60X0_INTEN_DATA_RDY,
-	.User_ctl = PIOS_MPU60X0_USERCTL_DIS_I2C,
+	.User_ctl = 0,
 	.Pwr_mgmt_clk = PIOS_MPU60X0_PWRMGMT_PLL_Z_CLK,
 	.default_filter = PIOS_MPU60X0_LOWPASS_256_HZ,
 	.orientation = PIOS_MPU60X0_TOP_180DEG
 };
-#endif /* PIOS_INCLUDE_MPU6000 */
+#endif /* PIOS_INCLUDE_MPU6050 */
 
 /* One slot per selectable receiver group.
  *  eg. PWM, PPM, GCS, SPEKTRUM1, SPEKTRUM2, SBUS
@@ -183,6 +183,11 @@ uintptr_t pios_rcvr_group_map[MANUALCONTROLSETTINGS_CHANNELGROUPS_NONE];
 
 #define PIOS_COM_FRSKYSENSORHUB_TX_BUF_LEN 128
 
+#define PIOS_COM_LIGHTTELEMETRY_TX_BUF_LEN 19
+
+#define PIOS_COM_PICOC_RX_BUF_LEN 128
+#define PIOS_COM_PICOC_TX_BUF_LEN 128
+
 #if defined(PIOS_INCLUDE_DEBUG_CONSOLE)
 #define PIOS_COM_DEBUGCONSOLE_TX_BUF_LEN 40
 uintptr_t pios_com_debug_id;
@@ -197,6 +202,8 @@ uintptr_t pios_com_overo_id;
 uintptr_t pios_com_mavlink_id;
 uintptr_t pios_com_hott_id;
 uintptr_t pios_com_frsky_sensor_hub_id;
+uintptr_t pios_com_lighttelemetry_id;
+uintptr_t pios_com_picoc_id;
 uintptr_t pios_uavo_settings_fs_id;
 uintptr_t pios_waypoints_settings_fs_id;
 uintptr_t pios_internal_adc_id;
@@ -363,7 +370,7 @@ void PIOS_Board_Init(void) {
 #endif
 #if defined(PIOS_INCLUDE_FLASH_INTERNAL)
 	if (PIOS_Flash_Internal_Init(&pios_internal_flash_id, &flash_internal_cfg) != 0)
-		panic(1);
+		panic(3);
 #endif
 
 	/* Register the partition table */
@@ -374,7 +381,7 @@ void PIOS_Board_Init(void) {
 
 	/* Mount all filesystems */
 	if (PIOS_FLASHFS_Logfs_Init(&pios_uavo_settings_fs_id, &flashfs_settings_cfg, FLASH_PARTITION_LABEL_SETTINGS) != 0)
-		panic(1);
+		panic(6);
 #endif	/* PIOS_INCLUDE_FLASH */
 
 	/* Initialize UAVObject libraries */
@@ -515,6 +522,21 @@ void PIOS_Board_Init(void) {
 			}
 		}
 #endif	/* PIOS_INCLUDE_DEBUG_CONSOLE */
+#endif	/* PIOS_INCLUDE_COM */
+		break;
+	case HWMINIM4_USB_VCPPORT_PICOC:
+#if defined(PIOS_INCLUDE_COM)
+		{
+			uint8_t * rx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_PICOC_RX_BUF_LEN);
+			uint8_t * tx_buffer = (uint8_t *) pvPortMalloc(PIOS_COM_PICOC_TX_BUF_LEN);
+			PIOS_Assert(rx_buffer);
+			PIOS_Assert(tx_buffer);
+			if (PIOS_COM_Init(&pios_com_picoc_id, &pios_usb_cdc_com_driver, pios_usb_cdc_id,
+						rx_buffer, PIOS_COM_PICOC_RX_BUF_LEN,
+						tx_buffer, PIOS_COM_PICOC_TX_BUF_LEN)) {
+				PIOS_Assert(0);
+			}
+		}
 #endif	/* PIOS_INCLUDE_COM */
 		break;
 	}
@@ -687,6 +709,16 @@ void PIOS_Board_Init(void) {
 		PIOS_Board_configure_com(&pios_usart1_cfg, 0, PIOS_COM_FRSKYSENSORHUB_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_frsky_sensor_hub_id);
 #endif /* PIOS_INCLUDE_FRSKY_SENSOR_HUB */
 		break;
+	case HWMINIM4_UART1_LIGHTTELEMETRYTX:
+#if defined(PIOS_INCLUDE_LIGHTTELEMETRY)
+		PIOS_Board_configure_com(&pios_usart1_cfg, 0, PIOS_COM_LIGHTTELEMETRY_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_lighttelemetry_id);
+#endif  
+		break;
+	case HWMINIM4_UART1_PICOC:
+#if defined(PIOS_INCLUDE_PICOC) && defined(PIOS_INCLUDE_USART) && defined(PIOS_INCLUDE_COM)
+		PIOS_Board_configure_com(&pios_usart1_cfg, PIOS_COM_PICOC_RX_BUF_LEN, PIOS_COM_PICOC_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_picoc_id);
+#endif /* PIOS_INCLUDE_PICOC */
+		break;
 	}
 
 	/* UART2 Port */
@@ -801,6 +833,16 @@ void PIOS_Board_Init(void) {
 #if defined(PIOS_INCLUDE_FRSKY_SENSOR_HUB) && defined(PIOS_INCLUDE_USART) && defined(PIOS_INCLUDE_COM)
 		PIOS_Board_configure_com(&pios_usart2_cfg, 0, PIOS_COM_FRSKYSENSORHUB_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_frsky_sensor_hub_id);
 #endif /* PIOS_INCLUDE_FRSKY_SENSOR_HUB */
+		break;
+	case HWMINIM4_UART2_LIGHTTELEMETRYTX:
+#if defined(PIOS_INCLUDE_LIGHTTELEMETRY)
+		PIOS_Board_configure_com(&pios_usart2_cfg, 0, PIOS_COM_LIGHTTELEMETRY_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_lighttelemetry_id);
+#endif  
+		break;
+	case HWMINIM4_UART2_PICOC:
+#if defined(PIOS_INCLUDE_PICOC) && defined(PIOS_INCLUDE_USART) && defined(PIOS_INCLUDE_COM)
+		PIOS_Board_configure_com(&pios_usart2_cfg, PIOS_COM_PICOC_RX_BUF_LEN, PIOS_COM_PICOC_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_picoc_id);
+#endif /* PIOS_INCLUDE_PICOC */
 		break;
 	}
 
@@ -919,7 +961,17 @@ void PIOS_Board_Init(void) {
 	case HWMINIM4_UART3_FRSKYSENSORHUB:
 	#if defined(PIOS_INCLUDE_FRSKY_SENSOR_HUB) && defined(PIOS_INCLUDE_USART) && defined(PIOS_INCLUDE_COM)
 		PIOS_Board_configure_com(&pios_usart3_cfg, 0, PIOS_COM_FRSKYSENSORHUB_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_frsky_sensor_hub_id);
-	#endif /* PIOS_INCLUDE_FRSKY_SENSOR_HUB */
+#endif /* PIOS_INCLUDE_FRSKY_SENSOR_HUB */
+		break;
+	case HWMINIM4_UART3_PICOC:
+#if defined(PIOS_INCLUDE_PICOC) && defined(PIOS_INCLUDE_USART) && defined(PIOS_INCLUDE_COM)
+		PIOS_Board_configure_com(&pios_usart3_cfg, PIOS_COM_PICOC_RX_BUF_LEN, PIOS_COM_PICOC_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_picoc_id);
+#endif /* PIOS_INCLUDE_PICOC */
+		break;
+	case HWMINIM4_UART3_LIGHTTELEMETRYTX:
+#if defined(PIOS_INCLUDE_LIGHTTELEMETRY)
+		PIOS_Board_configure_com(&pios_usart3_cfg, 0, PIOS_COM_LIGHTTELEMETRY_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_lighttelemetry_id);
+#endif  
 		break;
 	}
 
@@ -1016,6 +1068,16 @@ void PIOS_Board_Init(void) {
 		PIOS_Board_configure_com(&pios_usart4_cfg, 0, PIOS_COM_FRSKYSENSORHUB_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_frsky_sensor_hub_id);
 #endif /* PIOS_INCLUDE_FRSKY_SENSOR_HUB */
 		break;
+	case HWMINIM4_UART4_LIGHTTELEMETRYTX:
+#if defined(PIOS_INCLUDE_LIGHTTELEMETRY)
+		PIOS_Board_configure_com(&pios_usart4_cfg, 0, PIOS_COM_LIGHTTELEMETRY_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_lighttelemetry_id);
+#endif  
+		break;
+	case HWMINIM4_UART4_PICOC:
+#if defined(PIOS_INCLUDE_PICOC) && defined(PIOS_INCLUDE_USART) && defined(PIOS_INCLUDE_COM)
+		PIOS_Board_configure_com(&pios_usart4_cfg, PIOS_COM_PICOC_RX_BUF_LEN, PIOS_COM_PICOC_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_picoc_id);
+#endif /* PIOS_INCLUDE_PICOC */
+		break;
 	}
 
 	/* UART5 Port */
@@ -1110,7 +1172,17 @@ void PIOS_Board_Init(void) {
 #if defined(PIOS_INCLUDE_FRSKY_SENSOR_HUB) && defined(PIOS_INCLUDE_USART) && defined(PIOS_INCLUDE_COM)
 		PIOS_Board_configure_com(&pios_usart5_cfg, 0, PIOS_COM_FRSKYSENSORHUB_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_frsky_sensor_hub_id);
 #endif /* PIOS_INCLUDE_FRSKY_SENSOR_HUB */
-			break;
+		break;
+	case HWMINIM4_UART5_LIGHTTELEMETRYTX:
+#if defined(PIOS_INCLUDE_LIGHTTELEMETRY)
+		PIOS_Board_configure_com(&pios_usart5_cfg, 0, PIOS_COM_LIGHTTELEMETRY_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_lighttelemetry_id);
+#endif  
+		break;
+	case HWMINIM4_UART5_PICOC:
+#if defined(PIOS_INCLUDE_PICOC) && defined(PIOS_INCLUDE_USART) && defined(PIOS_INCLUDE_COM)
+		PIOS_Board_configure_com(&pios_usart5_cfg, PIOS_COM_PICOC_RX_BUF_LEN, PIOS_COM_PICOC_TX_BUF_LEN, &pios_usart_com_driver, &pios_com_picoc_id);
+#endif /* PIOS_INCLUDE_PICOC */
+		break;
 	}
 
 	/* Configure the rcvr port */
@@ -1268,10 +1340,10 @@ void PIOS_Board_Init(void) {
 	PIOS_DELAY_WaitmS(200);
 	PIOS_WDG_Clear();
 
-#if defined(PIOS_INCLUDE_MPU6000)
-	if (PIOS_MPU6000_Init(pios_spi_gyro_accel_id, 0, &pios_mpu6000_cfg) != 0)
+#if defined(PIOS_INCLUDE_MPU6050)
+	if (PIOS_MPU6050_Init(pios_i2c_internal_adapter_id, PIOS_MPU6050_I2C_ADD_A0_LOW, &pios_mpu6050_cfg) != 0)
 		panic(2);
-	if (PIOS_MPU6000_Test() != 0)
+	if (PIOS_MPU6050_Test() != 0)
 		panic(2);
 
 	// To be safe map from UAVO enum to driver enum
@@ -1279,16 +1351,16 @@ void PIOS_Board_Init(void) {
 	HwMiniM4GyroRangeGet(&hw_gyro_range);
 	switch(hw_gyro_range) {
 		case HWMINIM4_GYRORANGE_250:
-			PIOS_MPU6000_SetGyroRange(PIOS_MPU60X0_SCALE_250_DEG);
+			PIOS_MPU6050_SetGyroRange(PIOS_MPU60X0_SCALE_250_DEG);
 			break;
 		case HWMINIM4_GYRORANGE_500:
-			PIOS_MPU6000_SetGyroRange(PIOS_MPU60X0_SCALE_500_DEG);
+			PIOS_MPU6050_SetGyroRange(PIOS_MPU60X0_SCALE_500_DEG);
 			break;
 		case HWMINIM4_GYRORANGE_1000:
-			PIOS_MPU6000_SetGyroRange(PIOS_MPU60X0_SCALE_1000_DEG);
+			PIOS_MPU6050_SetGyroRange(PIOS_MPU60X0_SCALE_1000_DEG);
 			break;
 		case HWMINIM4_GYRORANGE_2000:
-			PIOS_MPU6000_SetGyroRange(PIOS_MPU60X0_SCALE_2000_DEG);
+			PIOS_MPU6050_SetGyroRange(PIOS_MPU60X0_SCALE_2000_DEG);
 			break;
 	}
 
@@ -1296,47 +1368,49 @@ void PIOS_Board_Init(void) {
 	HwMiniM4AccelRangeGet(&hw_accel_range);
 	switch(hw_accel_range) {
 		case HWMINIM4_ACCELRANGE_2G:
-			PIOS_MPU6000_SetAccelRange(PIOS_MPU60X0_ACCEL_2G);
+			PIOS_MPU6050_SetAccelRange(PIOS_MPU60X0_ACCEL_2G);
 			break;
 		case HWMINIM4_ACCELRANGE_4G:
-			PIOS_MPU6000_SetAccelRange(PIOS_MPU60X0_ACCEL_4G);
+			PIOS_MPU6050_SetAccelRange(PIOS_MPU60X0_ACCEL_4G);
 			break;
 		case HWMINIM4_ACCELRANGE_8G:
-			PIOS_MPU6000_SetAccelRange(PIOS_MPU60X0_ACCEL_8G);
+			PIOS_MPU6050_SetAccelRange(PIOS_MPU60X0_ACCEL_8G);
 			break;
 		case HWMINIM4_ACCELRANGE_16G:
-			PIOS_MPU6000_SetAccelRange(PIOS_MPU60X0_ACCEL_16G);
+			PIOS_MPU6050_SetAccelRange(PIOS_MPU60X0_ACCEL_16G);
 			break;
 	}
 
 	// the filter has to be set before rate else divisor calculation will fail
-	uint8_t hw_mpu6000_dlpf;
-	HwMiniM4MPU6000DLPFGet(&hw_mpu6000_dlpf);
-	enum pios_mpu60x0_filter mpu6000_dlpf = \
-	    (hw_mpu6000_dlpf == HWMINIM4_MPU6000DLPF_256) ? PIOS_MPU60X0_LOWPASS_256_HZ : \
-	    (hw_mpu6000_dlpf == HWMINIM4_MPU6000DLPF_188) ? PIOS_MPU60X0_LOWPASS_188_HZ : \
-	    (hw_mpu6000_dlpf == HWMINIM4_MPU6000DLPF_98) ? PIOS_MPU60X0_LOWPASS_98_HZ : \
-	    (hw_mpu6000_dlpf == HWMINIM4_MPU6000DLPF_42) ? PIOS_MPU60X0_LOWPASS_42_HZ : \
-	    (hw_mpu6000_dlpf == HWMINIM4_MPU6000DLPF_20) ? PIOS_MPU60X0_LOWPASS_20_HZ : \
-	    (hw_mpu6000_dlpf == HWMINIM4_MPU6000DLPF_10) ? PIOS_MPU60X0_LOWPASS_10_HZ : \
-	    (hw_mpu6000_dlpf == HWMINIM4_MPU6000DLPF_5) ? PIOS_MPU60X0_LOWPASS_5_HZ : \
-	    pios_mpu6000_cfg.default_filter;
-	PIOS_MPU6000_SetLPF(mpu6000_dlpf);
+	uint8_t hw_mpu6050_dlpf;
+	HwMiniM4MPU6050DLPFGet(&hw_mpu6050_dlpf);
+	enum pios_mpu60x0_filter mpu6050_dlpf = \
+	    (hw_mpu6050_dlpf == HWMINIM4_MPU6050DLPF_256) ? PIOS_MPU60X0_LOWPASS_256_HZ : \
+	    (hw_mpu6050_dlpf == HWMINIM4_MPU6050DLPF_188) ? PIOS_MPU60X0_LOWPASS_188_HZ : \
+	    (hw_mpu6050_dlpf == HWMINIM4_MPU6050DLPF_98) ? PIOS_MPU60X0_LOWPASS_98_HZ : \
+	    (hw_mpu6050_dlpf == HWMINIM4_MPU6050DLPF_42) ? PIOS_MPU60X0_LOWPASS_42_HZ : \
+	    (hw_mpu6050_dlpf == HWMINIM4_MPU6050DLPF_20) ? PIOS_MPU60X0_LOWPASS_20_HZ : \
+	    (hw_mpu6050_dlpf == HWMINIM4_MPU6050DLPF_10) ? PIOS_MPU60X0_LOWPASS_10_HZ : \
+	    (hw_mpu6050_dlpf == HWMINIM4_MPU6050DLPF_5) ? PIOS_MPU60X0_LOWPASS_5_HZ : \
+	    pios_mpu6050_cfg.default_filter;
+	PIOS_MPU6050_SetLPF(mpu6050_dlpf);
 
-	uint8_t hw_mpu6000_samplerate;
-	HwMiniM4MPU6000RateGet(&hw_mpu6000_samplerate);
-	uint16_t mpu6000_samplerate = \
-	    (hw_mpu6000_samplerate == HWMINIM4_MPU6000RATE_200) ? 200 : \
-	    (hw_mpu6000_samplerate == HWMINIM4_MPU6000RATE_333) ? 333 : \
-	    (hw_mpu6000_samplerate == HWMINIM4_MPU6000RATE_500) ? 500 : \
-	    (hw_mpu6000_samplerate == HWMINIM4_MPU6000RATE_666) ? 666 : \
-	    (hw_mpu6000_samplerate == HWMINIM4_MPU6000RATE_1000) ? 1000 : \
-	    (hw_mpu6000_samplerate == HWMINIM4_MPU6000RATE_2000) ? 2000 : \
-	    (hw_mpu6000_samplerate == HWMINIM4_MPU6000RATE_4000) ? 4000 : \
-	    (hw_mpu6000_samplerate == HWMINIM4_MPU6000RATE_8000) ? 8000 : \
-	    pios_mpu6000_cfg.default_samplerate;
-	PIOS_MPU6000_SetSampleRate(mpu6000_samplerate);
-#endif
+	uint8_t hw_mpu6050_samplerate;
+	HwMiniM4MPU6050RateGet(&hw_mpu6050_samplerate);
+	uint16_t mpu6050_samplerate = \
+	    (hw_mpu6050_samplerate == HWMINIM4_MPU6050RATE_200) ? 200 : \
+	    (hw_mpu6050_samplerate == HWMINIM4_MPU6050RATE_333) ? 333 : \
+	    (hw_mpu6050_samplerate == HWMINIM4_MPU6050RATE_500) ? 500 : \
+	    (hw_mpu6050_samplerate == HWMINIM4_MPU6050RATE_666) ? 666 : \
+	    (hw_mpu6050_samplerate == HWMINIM4_MPU6050RATE_1000) ? 1000 : \
+	    (hw_mpu6050_samplerate == HWMINIM4_MPU6050RATE_2000) ? 2000 : \
+	    (hw_mpu6050_samplerate == HWMINIM4_MPU6050RATE_4000) ? 4000 : \
+	    (hw_mpu6050_samplerate == HWMINIM4_MPU6050RATE_8000) ? 8000 : \
+	    pios_mpu6050_cfg.default_samplerate;
+	PIOS_MPU6050_SetSampleRate(mpu6050_samplerate);
+	
+	PIOS_MPU6050_SetPassThrough(true);
+#endif /* PIOS_INCLUDE_MPU6050 */
 
 #if defined(PIOS_INCLUDE_I2C)
 #if defined(PIOS_INCLUDE_HMC5883)

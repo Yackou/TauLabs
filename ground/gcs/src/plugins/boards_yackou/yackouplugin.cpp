@@ -63,4 +63,3 @@ void YackouPlugin::shutdown()
 {
 }
 
-Q_EXPORT_PLUGIN(YackouPlugin)

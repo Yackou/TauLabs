@@ -56,14 +56,13 @@
 #define PIOS_INCLUDE_FASTHEAP
 
 /* Select the sensors to include */
-//#define PIOS_INCLUDE_HMC5883
+#define PIOS_INCLUDE_HMC5883
 #define PIOS_INCLUDE_MPU6050
 #define PIOS_INCLUDE_ETASV3
 #define PIOS_INCLUDE_MPXV5004
 #define PIOS_INCLUDE_MPXV7002
-#define PIOS_MPU6000_ACCEL
-#define PIOS_MPU6000_SIMPLE_INIT_SEQUENCE
-//#define PIOS_INCLUDE_MS5611
+#define PIOS_MPU6050_ACCEL
+#define PIOS_INCLUDE_MS5611
 #define FLASH_FREERTOS
 /* Com systems to include */
 #define PIOS_INCLUDE_COM
@@ -73,11 +72,13 @@
 #define PIOS_INCLUDE_MAVLINK
 #define PIOS_INCLUDE_HOTT
 #define PIOS_INCLUDE_FRSKY_SENSOR_HUB
+#define PIOS_INCLUDE_SESSION_MANAGEMENT
+//#define PIOS_INCLUDE_LIGHTTELEMETRY
+#define PIOS_INCLUDE_PICOC
 
 #define PIOS_INCLUDE_GPS
 #define PIOS_INCLUDE_GPS_NMEA_PARSER
 #define PIOS_INCLUDE_GPS_UBX_PARSER
-#define PIOS_GPS_SETS_HOMELOCATION
 
 /* Supported receiver interfaces */
 #define PIOS_INCLUDE_RCVR
@@ -98,8 +99,6 @@
 /* Flags that alter behaviors - mostly to lower resources for CC */
 #define PIOS_INCLUDE_INITCALL           /* Include init call structures */
 #define PIOS_TELEM_PRIORITY_QUEUE       /* Enable a priority queue in telemetry */
-//#define PIOS_QUATERNION_STABILIZATION   /* Stabilization options */
-#define PIOS_GPS_SETS_HOMELOCATION      /* GPS options */
 
 #define CAMERASTAB_POI_MODE
 

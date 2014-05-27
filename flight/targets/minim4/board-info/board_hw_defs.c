@@ -2,13 +2,13 @@
  ******************************************************************************
  * @addtogroup TauLabsTargets Tau Labs Targets
  * @{
- * @addtogroup Quanton Quanton support files
+ * @addtogroup MiniM4 MiniM4 support files
  * @{
  *
  * @file       board_hw_defs.c 
  * @author     Tau Labs, http://taulabs.org, Copyright (C) 2012-2014
  * @brief      Defines board specific static initializers for hardware for the
- *             Quanton board.
+ *             MiniM4 board.
  * @see        The GNU Public License (GPL) Version 3
  * 
  *****************************************************************************/
@@ -496,8 +496,8 @@ void I2C3_EV_IRQHandler() __attribute__ ((alias ("PIOS_I2C_internal_ev_irq_handl
 void I2C3_ER_IRQHandler() __attribute__ ((alias ("PIOS_I2C_internal_er_irq_handler")));
 
 static const struct pios_i2c_adapter_cfg pios_i2c_internal_adapter_cfg = {
-  .regs = I2C3,
-  .remap = GPIO_AF_I2C3,
+  .regs = I2C2,
+  .remap = GPIO_AF_I2C2,
   .init = {
     .I2C_Mode                = I2C_Mode_I2C,
     .I2C_OwnAddress1         = 0,
@@ -508,31 +508,31 @@ static const struct pios_i2c_adapter_cfg pios_i2c_internal_adapter_cfg = {
   },
   .transfer_timeout_ms = 50,
   .scl = {
-    .gpio = GPIOA,
+    .gpio = GPIOB,
     .init = {
-			.GPIO_Pin = GPIO_Pin_8,
+			.GPIO_Pin = GPIO_Pin_10,
             .GPIO_Mode  = GPIO_Mode_AF,
             .GPIO_Speed = GPIO_Speed_50MHz,
             .GPIO_OType = GPIO_OType_OD,
             .GPIO_PuPd  = GPIO_PuPd_NOPULL,
     },
-	.pin_source = GPIO_PinSource8,
+	.pin_source = GPIO_PinSource10,
   },
   .sda = {
-    .gpio = GPIOC,
+    .gpio = GPIOB,
     .init = {
-			.GPIO_Pin = GPIO_Pin_9,
+			.GPIO_Pin = GPIO_Pin_11,
             .GPIO_Mode  = GPIO_Mode_AF,
             .GPIO_Speed = GPIO_Speed_50MHz,
             .GPIO_OType = GPIO_OType_OD,
             .GPIO_PuPd  = GPIO_PuPd_NOPULL,
     },
-	.pin_source = GPIO_PinSource9,
+	.pin_source = GPIO_PinSource11,
   },
   .event = {
     .flags   = 0,		/* FIXME: check this */
     .init = {
-			.NVIC_IRQChannel = I2C3_EV_IRQn,
+			.NVIC_IRQChannel = I2C2_EV_IRQn,
 			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST,
 			.NVIC_IRQChannelSubPriority = 0,
 			.NVIC_IRQChannelCmd = ENABLE,
@@ -541,7 +541,7 @@ static const struct pios_i2c_adapter_cfg pios_i2c_internal_adapter_cfg = {
   .error = {
     .flags   = 0,		/* FIXME: check this */
     .init = {
-			.NVIC_IRQChannel = I2C3_ER_IRQn,
+			.NVIC_IRQChannel = I2C2_ER_IRQn,
 			.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST,
 			.NVIC_IRQChannelSubPriority = 0,
 			.NVIC_IRQChannelCmd = ENABLE,
