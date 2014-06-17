@@ -82,11 +82,11 @@ static const struct pios_exti_cfg pios_exti_hmc5883_internal_cfg __exti_config =
 };
 
 static const struct pios_hmc5883_cfg pios_hmc5883_internal_cfg = {
-	.exti_cfg = &pios_exti_hmc5883_internal_cfg,
+	.exti_cfg = NULL,
 	.M_ODR = PIOS_HMC5883_ODR_75,
 	.Meas_Conf = PIOS_HMC5883_MEASCONF_NORMAL,
 	.Gain = PIOS_HMC5883_GAIN_1_9,
-	.Mode = PIOS_HMC5883_MODE_CONTINUOUS,
+	.Mode = PIOS_HMC5883_MODE_SINGLE,
 	.Default_Orientation = PIOS_HMC5883_TOP_90DEG,
 };
 
