@@ -418,8 +418,8 @@ void PIOS_I2C_usart1_er_irq_handler(void)
 
 void PIOS_I2C_usart3_ev_irq_handler(void);
 void PIOS_I2C_usart3_er_irq_handler(void);
-void I2C2_EV_IRQHandler() __attribute__ ((alias ("PIOS_I2C_usart3_ev_irq_handler")));
-void I2C2_ER_IRQHandler() __attribute__ ((alias ("PIOS_I2C_usart3_er_irq_handler")));
+void I2C3_EV_IRQHandler() __attribute__ ((alias ("PIOS_I2C_usart3_ev_irq_handler")));
+void I2C3_ER_IRQHandler() __attribute__ ((alias ("PIOS_I2C_usart3_er_irq_handler")));
 
 static const struct pios_i2c_adapter_cfg pios_i2c_usart3_adapter_cfg = {
   .regs = I2C2,
@@ -492,8 +492,8 @@ void PIOS_I2C_usart3_er_irq_handler(void)
 
 void PIOS_I2C_internal_ev_irq_handler(void);
 void PIOS_I2C_internal_er_irq_handler(void);
-void I2C3_EV_IRQHandler() __attribute__ ((alias ("PIOS_I2C_internal_ev_irq_handler")));
-void I2C3_ER_IRQHandler() __attribute__ ((alias ("PIOS_I2C_internal_er_irq_handler")));
+void I2C2_EV_IRQHandler() __attribute__ ((alias ("PIOS_I2C_internal_ev_irq_handler")));
+void I2C2_ER_IRQHandler() __attribute__ ((alias ("PIOS_I2C_internal_er_irq_handler")));
 
 static const struct pios_i2c_adapter_cfg pios_i2c_internal_adapter_cfg = {
   .regs = I2C2,
