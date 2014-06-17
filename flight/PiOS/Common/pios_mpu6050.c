@@ -62,6 +62,9 @@ struct mpu6050_dev {
 	const struct pios_mpu60x0_cfg *cfg;
 	enum pios_mpu6050_dev_magic magic;
 	enum pios_mpu60x0_filter filter;
+#if defined(PIOS_MPU6050_POLLING)
+	uint32_t delay_ticks;
+#endif
 };
 
 //! Global structure for this device device
@@ -156,6 +159,9 @@ int32_t PIOS_MPU6050_Init(uint32_t i2c_id, uint8_t i2c_addr, const struct pios_m
 	                         &pios_mpu6050_dev->TaskHandle);
 	PIOS_Assert(result == pdPASS);
 
+#if defined(PIOS_MPU6050_POLLING)
+	if (cfg->interrupt_en)
+#endif
 	/* Set up EXTI line */
 	PIOS_EXTI_Init(cfg->exti_cfg);
 
@@ -208,11 +214,17 @@ static void PIOS_MPU6050_Config(struct pios_mpu60x0_cfg const *cfg)
 	PIOS_MPU6050_SetAccelRange(PIOS_MPU60X0_ACCEL_8G);
 #endif /* PIOS_MPU6050_ACCEL */
 
+#if defined(PIOS_MPU6050_POLLING)
+	if (cfg->interrupt_en)
+#endif
+	{
 	// Interrupt configuration
 	PIOS_MPU6050_SetReg(PIOS_MPU60X0_INT_CFG_REG, cfg->interrupt_cfg);
 
 	// Interrupt enable
 	PIOS_MPU6050_SetReg(PIOS_MPU60X0_INT_EN_REG, cfg->interrupt_en);
+	}
+
 
 #else /* PIOS_MPU6050_SIMPLE_INIT_SEQUENCE */
 
@@ -240,11 +252,16 @@ static void PIOS_MPU6050_Config(struct pios_mpu60x0_cfg const *cfg)
 	//Power management configuration
 	PIOS_MPU6050_SetReg(PIOS_MPU60X0_PWR_MGMT_REG, cfg->Pwr_mgmt_clk);
 
+#if defined(PIOS_MPU6050_POLLING)
+	if (cfg->interrupt_en)
+#endif
+	{
 	// Interrupt configuration
 	PIOS_MPU6050_SetReg(PIOS_MPU60X0_INT_CFG_REG, cfg->interrupt_cfg);
 
 	// Interrupt enable
 	PIOS_MPU6050_SetReg(PIOS_MPU60X0_INT_EN_REG, cfg->interrupt_en);
+	}
 
 #if defined(PIOS_MPU6050_ACCEL)
 	// Set the accel scale
@@ -267,11 +284,16 @@ static void PIOS_MPU6050_Config(struct pios_mpu60x0_cfg const *cfg)
 	//Power management configuration
 	PIOS_MPU6050_SetReg(PIOS_MPU60X0_PWR_MGMT_REG, cfg->Pwr_mgmt_clk);
 
+#if defined(PIOS_MPU6050_POLLING)
+	if (cfg->interrupt_en)
+#endif
+	{
 	// Interrupt configuration
 	PIOS_MPU6050_SetReg(PIOS_MPU60X0_INT_CFG_REG, cfg->interrupt_cfg);
 
 	// Interrupt enable
 	PIOS_MPU6050_SetReg(PIOS_MPU60X0_INT_EN_REG, cfg->interrupt_en);
+	}
 
 #endif /* PIOS_MPU6050_SIMPLE_INIT_SEQUENCE */
 }
@@ -339,7 +361,25 @@ void PIOS_MPU6050_SetSampleRate(uint16_t samplerate_hz)
 		divisor = 0xff;
 
 	PIOS_MPU6050_SetReg(PIOS_MPU60X0_SMPLRT_DIV_REG, (uint8_t)divisor);
+
+	//TODO: Pass Sample rate to estimation module to provide more accurate measurement interval (dT)
+#if defined(PIOS_MPU6050_POLLING)
+	if (!pios_mpu6050_dev->cfg->interrupt_en) {
+		PIOS_Assert(samplerate_hz <= 1000);
+		pios_mpu6050_dev->delay_ticks = MS2TICKS(1000 / samplerate_hz);
+	}
+#endif
 }
+
+#if defined(PIOS_MPU6050_POLLING)
+/**
+ * Get the sample delay in clock ticks
+ */
+static int32_t PIOS_MPU6050_GetDelay()
+{
+	return pios_mpu6050_dev->delay_ticks;
+}
+#endif
 
 /**
  * Set the MPU6050 to act as a pass-through
@@ -591,9 +631,16 @@ bool PIOS_MPU6050_IRQHandler(void)
 static void PIOS_MPU6050_Task(void *parameters)
 {
 	while (1) {
+#if defined(PIOS_MPU6050_POLLING)
+		//TODO: Implement FIFO access to account for drift between CPU and gyro clocks
+		if (!pios_mpu6050_dev->cfg->interrupt_en) {
+			vTaskDelay(PIOS_MPU6050_GetDelay());
+		} else
+#endif
 		//Wait for data ready interrupt
 		if (xSemaphoreTake(pios_mpu6050_dev->data_ready_sema, portMAX_DELAY) != pdTRUE)
 			continue;
+
 
 		enum {
 		    IDX_ACCEL_XOUT_H = 0,
